@@ -42,9 +42,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(BUILD_SHARED_LIBS OFF)
 
-# Add component
-add_subdirectory(middlewares/libs_3rd/cjson)
-
 # Add header file
 include_directories(${PROJECT_SOURCE_DIR}/)
 
@@ -53,6 +50,10 @@ add_executable(${PROJECT_BIN}
 
     # Add source files in here.
 )
+
+# Add component
+add_subdirectory(middlewares/libs_3rd/json)
+target_link_libraries(${PROJECT_BIN} PRIVATE json)
 
 # Custom target to run the executable
 add_custom_target(run COMMAND ${EXECUTABLE_OUTPUT_PATH}/${PROJECT_BIN} DEPENDS ${PROJECT_BIN})
