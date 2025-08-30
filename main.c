@@ -71,14 +71,12 @@ typedef struct
  **********************/
 static long fs_get_file_size(const char *path);
 static int fs_read(const char *path, long offset, size_t size, unsigned char *buffer);
-static void process_contacts_json(const char *json_data, st_contact_t *fs_contact_data);
+static void process_contacts_json(const char* path_file, st_contact_t *fs_contact_data);
 static void show_contact(st_contact_t *contact);
 
 /**********************
  *  STATIC VARIABLES
  **********************/
-static uint8_t *fs_read_buffer = NULL;
-static long fs_file_size = 0;
 static st_person_t fs_person_data[] = {
     {18, e_AGE_18},
     {19, e_AGE_19},
@@ -115,25 +113,10 @@ static st_contact_t fs_contact_data[SIZE_CONTACT_DATA] = {0};
 int main()
 {
     printf("cJSON Version: %s\n", cJSON_Version());
-    fs_file_size = fs_get_file_size(PATH_FILE);
-    if (fs_file_size <= 0)
-    {
-        fprintf(stderr, "Failed to get file size or file is empty\n");
-        return 0;
-    }
-    fs_read_buffer = (uint8_t *)malloc(fs_file_size + 1);
-    if (!fs_read_buffer)
-    {
-        fprintf(stderr, "Failed to allocate memory for read buffer\n");
-        return 0;
-    }
 
-    fs_read(PATH_FILE, 0, fs_file_size, fs_read_buffer);
-
-    process_contacts_json((const char *)fs_read_buffer, fs_contact_data);
+    process_contacts_json(PATH_FILE, fs_contact_data);
     show_contact(fs_contact_data);
 
-    free(fs_read_buffer);
     return 0;
 }
 /**********************
@@ -171,9 +154,24 @@ static int fs_read(const char *path, long offset, size_t size, unsigned char *bu
     return (int)bytesRead;
 }
 
-static void process_contacts_json(const char *json_data, st_contact_t *fs_contact_data)
+static void process_contacts_json(const char* path_file, st_contact_t *fs_contact_data)
 {
-    cJSON *root = cJSON_Parse(json_data);
+    int fs_file_size = fs_get_file_size(path_file);
+    if (fs_file_size <= 0)
+    {
+        fprintf(stderr, "Failed to get file size or file is empty\n");
+        return;
+    }
+    uint8_t *fs_read_buffer = (uint8_t *)malloc(fs_file_size + 1);
+    if (!fs_read_buffer)
+    {
+        fprintf(stderr, "Failed to allocate memory for read buffer\n");
+        return 0;
+    }
+
+    fs_read(PATH_FILE, 0, fs_file_size, fs_read_buffer);
+
+    cJSON *root = cJSON_Parse(fs_read_buffer);
     if (!root)
     {
         printf("Fail parse JSON: %s\n", cJSON_GetErrorPtr());
@@ -230,6 +228,7 @@ static void process_contacts_json(const char *json_data, st_contact_t *fs_contac
     }
 
     cJSON_Delete(root);
+    free(fs_read_buffer);
 }
 
 static void show_contact(st_contact_t *contact)
