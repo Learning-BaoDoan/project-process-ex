@@ -231,6 +231,18 @@ static void process_contacts_json(const char* path_file, st_contact_t *fs_contac
     free(fs_read_buffer);
 }
 
+static uint8_t get_age_string(e_age_t e_age)
+{
+    for (int index = 0; index < sizeof(fs_person_data) / sizeof(fs_person_data[0]); ++index)
+    {
+        if (fs_person_data[index].age_enum == e_age)
+        {
+            return fs_person_data[index].age;
+        }
+    }
+    return 0;
+}
+
 static void show_contact(st_contact_t *contact)
 {
     if (!contact)
@@ -244,7 +256,7 @@ static void show_contact(st_contact_t *contact)
         if (strlen(contact[i].name) == 0) continue;
         printf("Contact #%d:\n", (int)i + 1);
         printf("  Name: %s\n", contact[i].name);
-        printf("  Age: %d\n", contact[i].age_enum);
+        printf("  Age: %d\n", get_age_string(contact[i].age_enum));
         printf("  Address: %s\n", contact[i].address);
         printf("  Online: %s\n", contact[i].is_online ? "Yes" : "No");
     }
